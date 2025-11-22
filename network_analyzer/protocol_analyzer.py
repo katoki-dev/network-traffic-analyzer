@@ -169,8 +169,13 @@ class ProtocolAnalyzer:
         
         # DNS Queries
         if dns.qd:
+            try:
+                qname = dns.qd.qname.decode() if isinstance(dns.qd.qname, bytes) else str(dns.qd.qname)
+            except (AttributeError, UnicodeDecodeError):
+                qname = str(dns.qd.qname)
+            
             query = {
-                'name': dns.qd.qname.decode() if hasattr(dns.qd.qname, 'decode') else str(dns.qd.qname),
+                'name': qname,
                 'type': dns.qd.qtype
             }
             info['queries'].append(query)
@@ -179,12 +184,13 @@ class ProtocolAnalyzer:
         # DNS Answers
         if dns.an:
             try:
+                rrname = dns.an.rrname.decode() if isinstance(dns.an.rrname, bytes) else str(dns.an.rrname)
                 answer = {
-                    'name': dns.an.rrname.decode() if hasattr(dns.an.rrname, 'decode') else str(dns.an.rrname),
+                    'name': rrname,
                     'data': dns.an.rdata
                 }
                 info['answers'].append(answer)
-            except:
+            except (AttributeError, UnicodeDecodeError):
                 pass
         
         return info
